@@ -1,0 +1,40 @@
+.vagrant
+*~
+*#
+.#*
+\#*#
+.*.sw[a-z]
+*.un~
+tmp/*
+!tmp/.gitkeep
+hosts/*
+!hosts/.gitkeep
+inspec/inspec_connect*
+*.tf.json
+.DS_Store
+
+# Bundler
+Gemfile.lock
+gems.locked
+bin/*
+.bundle/*
+
+# test kitchen
+.kitchen/
+.kitchen.local.yml
+
+# Chef
+Berksfile.lock
+.zero-knife.rb
+Policyfile.lock.json
+.delivery/*
+
+# Terraform
+terraform
+.terraform
+terraform.tfstate*
+
+# MAC
+.DS_Store
+
+instance_conf*.yml

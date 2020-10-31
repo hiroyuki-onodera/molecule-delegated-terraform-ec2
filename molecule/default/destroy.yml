@@ -1,0 +1,28 @@
+---
+- name: Destroy
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  no_log: "{{ molecule_no_log }}"
+  tasks:
+
+  - name: Populate instance config
+    shell: |-
+      set -x
+      terraform destroy --auto-approve -no-color || terraform destroy --auto-approve -no-color
+    register: r
+
+  - debug:
+      var: r.stdout_lines
+
+  - name: Populate instance config
+    set_fact:
+      instance_conf: {}
+
+  - name: Dump instance config
+    copy:
+      content: |
+        # Molecule managed
+
+        {{ instance_conf | to_json | from_json | to_yaml }}
+      dest: "{{ molecule_instance_config }}"

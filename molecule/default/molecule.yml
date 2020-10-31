@@ -1,0 +1,11 @@
+---
+dependency:
+  name: galaxy
+driver:
+  name: delegated
+platforms: # terraformにて作成するインスタンスのlistと名前が合致する必要がある
+  - name: ins01
+provisioner:
+  name: ansible
+verifier:
+  name: ansible

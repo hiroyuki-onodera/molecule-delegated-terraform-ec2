@@ -1,0 +1,5 @@
+---
+# tasks file for molecule-delegated
+
+- debug: 
+    var: ansible_distribution

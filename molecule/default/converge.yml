@@ -1,0 +1,10 @@
+---
+- name: Converge
+  hosts: all
+  #gather_facts: false # debug
+  tasks:
+    #- debug:
+        #var: vars
+    - name: "Include molecule-delegated"
+      include_role:
+        name: "molecule-delegated"

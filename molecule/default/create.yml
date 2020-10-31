@@ -1,0 +1,37 @@
+---
+- name: Create
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  tasks:
+
+  - name: terraform apply -auto-approve
+    shell: |-
+      set -x
+      exec 2>&1
+      rm *.tf.json
+      ls *.tf.yml | awk '{TO=$1; sub(/.tf.yml$/,".tf.json",TO); print "yq . "$1" > "TO}' | bash -x
+      terraform init
+      terraform apply -auto-approve -no-color || terraform apply -auto-approve -no-color
+    register: r
+
+  - debug: { var: r.stdout_lines }
+
+  - name: Make instance_conf
+    set_fact:
+      instance_conf: "{{ instance_conf + [lookup('file',item)|from_yaml] }}"
+    with_fileglob:
+    - instance_conf-*.yml
+    vars:
+      instance_conf: []
+
+  - name: Dump instance config
+    copy:
+      content: |
+        # Molecule managed
+
+        {{ instance_conf | to_json | from_json | to_yaml }}
+      dest: "{{ molecule_instance_config }}"
+
+  - pause:
+      seconds: 30
