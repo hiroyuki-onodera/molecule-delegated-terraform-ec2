@@ -1,0 +1,6 @@
+---
+- name: Prepare
+  hosts: all
+  gather_facts: no
+  tasks:
+  - wait_for_connection:
