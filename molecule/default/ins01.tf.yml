@@ -24,8 +24,6 @@ resource:
         port: 22
         identity_file: ~/.ssh/id_rsa
 output:
-  public_ip:
-    value: "${aws_eip.eip-ins01.public_ip}"
-  ssh_login:
+  ssh_login-ins01:
     value: ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa
       ec2-user@${aws_eip.eip-ins01.public_ip}
