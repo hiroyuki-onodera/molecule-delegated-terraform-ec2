@@ -3,27 +3,49 @@
   hosts: localhost
   connection: local
   gather_facts: false
+  #no_log: "{{ molecule_no_log }}"
   tasks:
+
+  - name: set_fact molecule_platforms
+    set_fact:
+      molecule_platforms: "{{ molecule_yml.platforms|map(attribute='name')|list }}"
+
+  - debug:
+      var: molecule_platforms
 
   - name: terraform apply -auto-approve
     shell: |-
-      set -x
+      set -ex
       exec 2>&1
-      rm *.tf.json
+      which yq
+      which terraform
+      ! ls *.tf.json || rm *.tf.json
+      ! ls instance_conf-*.yml || rm instance_conf-*.yml
       ls *.tf.yml | awk '{TO=$1; sub(/.tf.yml$/,".tf.json",TO); print "yq . "$1" > "TO}' | bash -x
-      terraform init
+      terraform init -no-color
       terraform apply -auto-approve -no-color || terraform apply -auto-approve -no-color
     register: r
 
-  - debug: { var: r.stdout_lines }
+  - debug:
+      var: r.stdout_lines
 
-  - name: Make instance_conf
-    set_fact:
-      instance_conf: "{{ instance_conf + [lookup('file',item)|from_yaml] }}"
-    with_fileglob:
-    - instance_conf-*.yml
+  - name: Make instance_conf from terraform localfile
     vars:
       instance_conf: []
+    with_fileglob:
+    - instance_conf-*.yml
+    set_fact:
+      instance_conf: "{{ instance_conf + [lookup('file',item)|from_yaml] }}"
+
+  - name: set_fact terraform_platforms
+    set_fact:
+      terraform_platforms: "{{ instance_conf|map(attribute='instance')|list }}"
+  - debug:
+      var: terraform_platforms
+  - name: Check molecule_platforms is included in terraform_platforms
+    assert:
+      that:
+      - "{{ (molecule_platforms|difference(terraform_platforms)) == [] }}"
 
   - name: Dump instance config
     copy:
@@ -32,6 +54,3 @@
 
         {{ instance_conf | to_json | from_json | to_yaml }}
       dest: "{{ molecule_instance_config }}"
-
-  - pause:
-      seconds: 30
