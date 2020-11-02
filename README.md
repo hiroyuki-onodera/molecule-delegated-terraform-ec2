@@ -26,16 +26,16 @@ Moleculeを使ってplaybookのテストなどを行う際に、クラウドに�
 .
 ├── molecule
 │   └── default
-│       ├── common.tf.yml             # terraform用ec2設定ファイル1
-│       ├── ins01.tf.yml              # terraform用ec2設定ファイル2
+│       ├── tf_common.tf.yml          # terraform用ec2設定ファイル1
+│       ├── tf_ins01.tf.yml           # terraform用ec2設定ファイル2
 │       │
-│       ├── (common.tf.json)          # common.tf.ymlから生成
-│       ├── (ins01.tf.json)           # ins01.tf.ymlから生成
+│       ├── (tf_common.tf.json)       # common.tf.ymlから生成
+│       ├── (tf_ins01.tf.json)        # tf_ins01.tf.ymlから生成
 │       │
 │       ├── (instance_conf-ins01.yml) # terraform作成
 │       │                             # moleculeに連携するインスタンスへの接続情報
 │       │
-│       ├── (terraform.tfstate)       # terraform作成。ステータス情報
+├── (terraform.tfstate)       # terraform作成。ステータス情報
 │       │
 │       ├── molecule.yml              # molecule定義情報
 │       ├── create.yml                # molecule vm作成playbook
@@ -85,13 +85,13 @@ $ . ~/.bash_profile
 - ここでは、.tf.jsonをYAMLで表記したファイルにてec2設定を行い、terraform使用前にjson化
 - 最初から.tfフォーマットや.tf.jsonフォーマットで記述、管理するならばYAML管理は不要
 
-- common.tf.yml は、providerやネットワーク定義など個別のインスタンスに1:1で対応しない設定をまとめたもの。
+- tf_common.tf.yml は、providerやネットワーク定義など個別のインスタンスに1:1で対応しない設定をまとめたもの。
 
 - VPC EC2定義の大部分は以下から引用させていただいています。ありがとうございます。
     - TerraformでVPC・EC2インスタンスを構築してssh接続する
     - https://qiita.com/kou_pg_0131/items/45cdde3d27bd75f1bfd5
 
-```yaml:molecule/default/common.tf.yml
+```yaml:molecule/default/tf_common.tf.yml
 ---
 terraform:
   required_providers:
@@ -196,7 +196,7 @@ resource:
 - 作成したインスタンスへの接続情報はlocal_file:リソースを用いてMoleculeに連携する
 - ユーザー利便を考慮してsshログイン方法をoutputにて表示
 
-```yaml:molecule/default/ins01.tf.yml
+```yaml:molecule/default/tf_ins01.tf.yml
 ---
 resource:
   aws_instance:
@@ -239,8 +239,8 @@ yqユーティリティによりYAMLファイルからterraform用の.tf.jsonフ
 
 ```
 $ cd molecule/default/
-$ yq . common.tf.yml > common.tf.json
-$ yq . ins01.tf.yml > ins01.tf.json
+$ yq . tf_common.tf.yml > tf_common.tf.json
+$ yq . tf_ins01.tf.yml > tf_ins01.tf.json
 ```
 
 yqはMACにデフォルトでは導入されていない。
@@ -248,8 +248,8 @@ yqはMACにデフォルトでは導入されていない。
 
 ```
 $ cd molecule/default/
-$ cat common.tf.yml | python -c "import yaml; import json; import sys; print(json.dumps(yaml.load(sys.stdin, Loader=yaml.FullLoader), indent=2))" > common.tf.json
-$ cat ins01.tf.yml | python -c "import yaml; import json; import sys; print(json.dumps(yaml.load(sys.stdin, Loader=yaml.FullLoader), indent=2))" > ins01.tf.json
+$ cat tf_common.tf.yml | python -c "import yaml; import json; import sys; print(json.dumps(yaml.load(sys.stdin, Loader=yaml.FullLoader), indent=2))" > tf_common.tf.json
+$ cat tf_ins01.tf.yml | python -c "import yaml; import json; import sys; print(json.dumps(yaml.load(sys.stdin, Loader=yaml.FullLoader), indent=2))" > tf_ins01.tf.json
 ```
 
 
@@ -560,17 +560,17 @@ Skipping, cleanup playbook not configured.
             "/Users/aa220269/.pyenv/shims/yq",
             "+ which terraform",
             "/usr/local/bin/terraform",
-            "+ ls common.tf.json ins01.tf.json",
-            "common.tf.json",
-            "ins01.tf.json",
-            "+ rm common.tf.json ins01.tf.json",
+            "+ ls tf_common.tf.json tf_ins01.tf.json",
+            "tf_common.tf.json",
+            "tf_ins01.tf.json",
+            "+ rm tf_common.tf.json tf_ins01.tf.json",
             "+ ls 'instance_conf-*.yml'",
             "ls: instance_conf-*.yml: No such file or directory",
-            "+ ls common.tf.yml ins01.tf.yml",
+            "+ ls tf_common.tf.yml tf_ins01.tf.yml",
             "+ awk '{TO=$1; sub(/.tf.yml$/,\".tf.json\",TO); print \"yq . \"$1\" > \"TO}'",
             "+ bash -x",
-            "+ yq . common.tf.yml",
-            "+ yq . ins01.tf.yml",
+            "+ yq . tf_common.tf.yml",
+            "+ yq . tf_ins01.tf.yml",
             "+ terraform init -no-color",
             "",
             "Initializing the backend...",
