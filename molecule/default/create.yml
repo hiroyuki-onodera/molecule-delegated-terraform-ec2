@@ -6,13 +6,6 @@
   #no_log: "{{ molecule_no_log }}"
   tasks:
 
-  - name: set_fact molecule_platforms
-    set_fact:
-      molecule_platforms: "{{ molecule_yml.platforms|map(attribute='name')|list }}"
-
-  - debug:
-      var: molecule_platforms
-
   - name: terraform apply -auto-approve
     shell: |-
       set -ex
@@ -25,7 +18,6 @@
       terraform init -no-color
       terraform apply -auto-approve -no-color || terraform apply -auto-approve -no-color
     register: r
-
   - debug:
       var: r.stdout_lines
 
@@ -37,6 +29,12 @@
     set_fact:
       instance_conf: "{{ instance_conf + [lookup('file',item)|from_yaml] }}"
 
+
+  - name: set_fact molecule_platforms
+    set_fact:
+      molecule_platforms: "{{ molecule_yml.platforms|map(attribute='name')|list }}"
+  - debug:
+      var: molecule_platforms
   - name: set_fact terraform_platforms
     set_fact:
       terraform_platforms: "{{ instance_conf|map(attribute='instance')|list }}"
@@ -46,6 +44,7 @@
     assert:
       that:
       - "{{ (molecule_platforms|difference(terraform_platforms)) == [] }}"
+
 
   - name: Dump instance config
     copy:
