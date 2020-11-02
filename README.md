@@ -29,7 +29,7 @@ Moleculeを使ってplaybookのテストなどを行う際に、クラウドに�
 │       ├── tf_common.tf.yml          # terraform用ec2設定ファイル1
 │       ├── tf_ins01.tf.yml           # terraform用ec2設定ファイル2
 │       │
-│       ├── (tf_common.tf.json)       # common.tf.ymlから生成
+│       ├── (tf_common.tf.json)       # tf_common.tf.ymlから生成
 │       ├── (tf_ins01.tf.json)        # tf_ins01.tf.ymlから生成
 │       │
 │       ├── (instance_conf-ins01.yml) # terraform作成
