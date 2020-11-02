@@ -7,7 +7,7 @@ Moleculeを使ってplaybookのテストなどを行う際に、クラウドに�
 - 様々なクラウドに対応可能
 - 冪等性はterraformにて対応
 
-ここでは AWS EC2環境を例に設定を試みる。
+ここでは、AWS EC2環境を例に、Molecule + Terraformで設定を試みる。(molecule-ec2は使用しない。)
 
 # 環境:
 
