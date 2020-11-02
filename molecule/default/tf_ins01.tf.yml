@@ -2,7 +2,7 @@
 resource:
   aws_instance:
     ins01:
-      ami: "${data.aws_ami.example.image_id}"
+      ami: "${data.aws_ami.ami01.image_id}"
       vpc_security_group_ids:
       - "${aws_security_group.security_group01.id}"
       subnet_id: "${aws_subnet.subnet01.id}"

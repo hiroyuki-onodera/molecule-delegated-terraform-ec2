@@ -12,7 +12,7 @@ Moleculeを使ってplaybookのテストなどを行う際に、クラウドに�
 # 環境:
 
 - macOS 10.15.7
-- Python(pyenv) 3.8.2 
+- Python(pyenv) 3.8.2
 - ansible 2.10.2
 - molecule 3.1.5
 - Terraform v0.13.4
@@ -28,15 +28,15 @@ Moleculeを使ってplaybookのテストなどを行う際に、クラウドに�
 │   └── default
 │       ├── common.tf.yml             # terraform用ec2設定ファイル1
 │       ├── ins01.tf.yml              # terraform用ec2設定ファイル2
-│       │ 
-│       ├── common.tf.json            # common.tf.ymlから生成
-│       ├── ins01.tf.json             # ins01.tf.ymlから生成
-│       │ 
-│       ├── instance_conf-ins01.yml   # terraform作成
+│       │
+│       ├── (common.tf.json)          # common.tf.ymlから生成
+│       ├── (ins01.tf.json)           # ins01.tf.ymlから生成
+│       │
+│       ├── (instance_conf-ins01.yml) # terraform作成
 │       │                             # moleculeに連携するインスタンスへの接続情報
-│       │ 
-│       ├── terraform.tfstate         # terraform作成。ステータス情報
-│       │ 
+│       │
+│       ├── (terraform.tfstate)       # terraform作成。ステータス情報
+│       │
 │       ├── molecule.yml              # molecule定義情報
 │       ├── create.yml                # molecule vm作成playbook
 │       ├── prepare.yml               # molecule vm事前準備playbook
@@ -47,6 +47,8 @@ Moleculeを使ってplaybookのテストなどを行う際に、クラウドに�
     └── main.yml
 ```
 
+サンプルコードは以下
+https://github.com/hiroyuki-onodera/molecule-delegated-terraform-ec2
 
 # CH1: Terraform による AWS EC2管理
 
@@ -76,12 +78,18 @@ $ . ~/.bash_profile
 
 ## terraform による providerやネットワーク定義
 
+
+
 - .tfフォーマットは他のユーティリティとの連携などが困難
 - .tf.jsonフォーマットは人が直接使用するには難しい
 - ここでは、.tf.jsonをYAMLで表記したファイルにてec2設定を行い、terraform使用前にjson化
 - 最初から.tfフォーマットや.tf.jsonフォーマットで記述、管理するならばYAML管理は不要
 
 - common.tf.yml は、providerやネットワーク定義など個別のインスタンスに1:1で対応しない設定をまとめたもの。
+
+- VPC EC2定義の大部分は以下から引用させていただいています。ありがとうございます。
+    - TerraformでVPC・EC2インスタンスを構築してssh接続する
+    - https://qiita.com/kou_pg_0131/items/45cdde3d27bd75f1bfd5
 
 ```yaml:molecule/default/common.tf.yml
 ---
@@ -248,7 +256,7 @@ $ cat ins01.tf.yml | python -c "import yaml; import json; import sys; print(json
 ### terraform初期化 (terraform init)
 
 ```
-$ terraform init 
+$ terraform init
 
 Initializing the backend...
 
@@ -475,9 +483,9 @@ Dump taskなどは無変更
 molecule testにて、インスタンス作成、反映、削除まで通しで実行させてみる
 
 ```
-$ molecule test 
+$ molecule test
 --> Test matrix
-    
+
 └── default
     ├── dependency
     ├── lint
@@ -492,7 +500,7 @@ $ molecule test
     ├── verify
     ├── cleanup
     └── destroy
-    
+
 --> Scenario: 'default'
 --> Action: 'dependency'
 Skipping, missing the requirements file.
@@ -505,46 +513,46 @@ Skipping, missing the requirements file.
 Skipping, cleanup playbook not configured.
 --> Scenario: 'default'
 --> Action: 'destroy'
-    
+
     PLAY [Destroy] *****************************************************************
-    
+
     TASK [Populate instance config] ************************************************
     changed: [localhost]
-    
+
     TASK [debug] *******************************************************************
     ok: [localhost]
-    
+
     TASK [Populate instance config] ************************************************
     ok: [localhost]
-    
+
     TASK [Dump instance config] ****************************************************
     changed: [localhost]
-    
+
     PLAY RECAP *********************************************************************
     localhost                  : ok=4    changed=2    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
-    
+
 --> Scenario: 'default'
 --> Action: 'syntax'
-    
+
     playbook: /Users/aa220269/repo/repo-test/cookbooks/molecule-delegated-terraform-ec2/molecule/default/converge.yml
 --> Scenario: 'default'
 --> Action: 'create'
-    
+
     PLAY [Create] ******************************************************************
-    
+
     TASK [set_fact molecule_platforms] *********************************************
     ok: [localhost]
-    
+
     TASK [debug] *******************************************************************
     ok: [localhost] => {
         "molecule_platforms": [
             "ins01"
         ]
     }
-    
+
     TASK [terraform apply -auto-approve] *******************************************
     changed: [localhost]
-    
+
     TASK [debug] *******************************************************************
     ok: [localhost] => {
         "r.stdout_lines": [
@@ -630,48 +638,48 @@ Skipping, cleanup playbook not configured.
             "ssh_login-ins01 = ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ec2-user@54.249.181.45"
         ]
     }
-    
+
     TASK [Make instance_conf from terraform localfile] *****************************
     ok: [localhost] => (item=/Users/aa220269/repo/repo-test/cookbooks/molecule-delegated-terraform-ec2/molecule/default/instance_conf-ins01.yml)
-    
+
     TASK [set_fact terraform_platforms] ********************************************
     ok: [localhost]
-    
+
     TASK [debug] *******************************************************************
     ok: [localhost] => {
         "terraform_platforms": [
             "ins01"
         ]
     }
-    
+
     TASK [Check molecule_platforms is included in terraform_platforms] *************
     ok: [localhost] => {
         "changed": false,
         "msg": "All assertions passed"
     }
-    
+
     TASK [Dump instance config] ****************************************************
     changed: [localhost]
-    
+
     PLAY RECAP *********************************************************************
     localhost                  : ok=9    changed=2    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
-    
+
 --> Scenario: 'default'
 --> Action: 'prepare'
-    
+
     PLAY [Prepare] *****************************************************************
-    
+
     TASK [wait_for_connection] *****************************************************
     ok: [ins01]
-    
+
     PLAY RECAP *********************************************************************
     ins01                      : ok=1    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
-    
+
 --> Scenario: 'default'
 --> Action: 'converge'
-    
+
     PLAY [Converge] ****************************************************************
-    
+
     TASK [Gathering Facts] *********************************************************
 [WARNING]: Platform linux on host ins01 is using the discovered Python
 interpreter at /usr/bin/python, but future installation of another Python
@@ -679,17 +687,17 @@ interpreter could change the meaning of that path. See https://docs.ansible.com
 /ansible/2.10/reference_appendices/interpreter_discovery.html for more
 information.
     ok: [ins01]
-    
+
     TASK [Include molecule-delegated-terraform-ec2] ********************************
-    
+
     TASK [molecule-delegated-terraform-ec2 : debug] ********************************
     ok: [ins01] => {
         "ansible_distribution": "Amazon"
     }
-    
+
     PLAY RECAP *********************************************************************
     ins01                      : ok=2    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
-    
+
 --> Scenario: 'default'
 --> Action: 'idempotence'
 Idempotence completed successfully.
@@ -699,47 +707,47 @@ Skipping, side effect playbook not configured.
 --> Scenario: 'default'
 --> Action: 'verify'
 --> Running Ansible Verifier
-    
+
     PLAY [Verify] ******************************************************************
-    
+
     TASK [Example assertion] *******************************************************
     ok: [ins01] => {
         "changed": false,
         "msg": "All assertions passed"
     }
-    
+
     PLAY RECAP *********************************************************************
     ins01                      : ok=1    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
-    
+
 Verifier completed successfully.
 --> Scenario: 'default'
 --> Action: 'cleanup'
 Skipping, cleanup playbook not configured.
 --> Scenario: 'default'
 --> Action: 'destroy'
-    
+
     PLAY [Destroy] *****************************************************************
-    
+
     TASK [Populate instance config] ************************************************
     changed: [localhost]
-    
+
     TASK [debug] *******************************************************************
     ok: [localhost]
-    
+
     TASK [Populate instance config] ************************************************
     ok: [localhost]
-    
+
     TASK [Dump instance config] ****************************************************
     changed: [localhost]
-    
+
     PLAY RECAP *********************************************************************
     localhost                  : ok=4    changed=2    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
-    
+
 --> Pruning extra files from scenario ephemeral directory
 
 ```
 
-参考
+# 参考
 
 TerraformでVPC・EC2インスタンスを構築してssh接続する
 https://qiita.com/kou_pg_0131/items/45cdde3d27bd75f1bfd5
